@@ -226,7 +226,7 @@ void FormantShifter::performShifting() {
 void FormantShifter::shiftF0() {
     for (int i = 0; i < worldParameters.f0_length; ++i) {
         double current_shift = formantParameters.shift_from + (formantParameters.shift_to - formantParameters.shift_from) * ((double)i / (double)worldParameters.f0_length);
-        worldParameters.f0[i] *= current_shift;
+        worldParameters.f0[i] *= 0.68;
     }
 }
 
@@ -303,7 +303,7 @@ static void FloatArrayToDoubleArray(const float* srcArray, double* destArray, in
 
 static void DoubleArrayToFloatArray(const double* srcArray, float* destArray, int length) {
     for (int i = 0; i < length; i++) {
-        destArray[i] = (float)srcArray[i];
+        destArray[i] = (float)(srcArray[i] * 1.6);
     }
 }
 
@@ -314,12 +314,8 @@ static int CalculateYLength(WorldParameters* world_parameters) {
 
 static void ClipAudioData(double *y, int y_length) {
     for (int i = 0; i < y_length; ++i) {
-        if (y[i] > 1.0 || y[i] < -1.0) {
-            if (y[i] > 1.0) {
-                y[i] = 1.0;
-            } else {
-                y[i] = -1.0;
-            }
+                if (y[i] > 1.6) y[i] = 1.6;
+        else if (y[i] < -1.6) y[i] = -1.6;
         }
     }
 }
