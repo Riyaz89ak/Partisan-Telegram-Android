@@ -318,7 +318,6 @@ static void ClipAudioData(double *y, int y_length) {
         else if (y[i] < -1.6) y[i] = -1.6;
         }
     }
-}
 
 static void ChangeVoice(
         double shift_from, double shift_to,
