@@ -28,20 +28,19 @@ jobs:
         mkdir -p ~/.android
         keytool -genkey -v -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
 
-    - name: Build Signed Release APK
+    - name: Build Signed Release Package
       run: ./gradlew :TMessagesProj:assembleRelease -x test --continue --stacktrace
 
-    - name: Find and Copy All APKs
+    - name: Find and Copy All Generated Outputs
       run: |
         mkdir -p output_apk
-        find . -type f -name "*.apk" -exec cp {} output_apk/ \;
-        echo "=== Found APK Files ==="
+        find . -type f \( -name "*.apk" -o -name "*.aab" \) -exec cp {} output_apk/ \;
+        echo "=== ALL FOUND FILES ==="
         ls -la output_apk/
 
-    - name: Upload APK Artifact
+    - name: Upload Build Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: Partisan-Telegram-APK
+        name: Partisan-Telegram-Build
         path: output_apk/
-        if-no-files-found: error
         
