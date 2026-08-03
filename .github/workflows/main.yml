@@ -23,19 +23,15 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Create Debug Keystore for Release
-      run: |
-        mkdir -p ~/.android
-        keytool -genkey -v -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+    - name: Build Debug AFAT APK
+      run: ./gradlew :TMessagesProj:assembleAfatDebug -x test --continue --stacktrace
 
-    - name: Build Signed Release Package
-      run: ./gradlew :TMessagesProj:assembleRelease -x test --continue --stacktrace
-
-    - name: Find and Copy All Generated Outputs
+    - name: Inspect Build Outputs
       run: |
         mkdir -p output_apk
-        find . -type f \( -name "*.apk" -o -name "*.aab" \) -exec cp {} output_apk/ \;
-        echo "=== ALL FOUND FILES ==="
+        echo "=== SEARCHING ALL FILES CREATED ==="
+        find . -type f \( -name "*.apk" -o -name "*.aab" -o -name "*.zip" \) -exec cp {} output_apk/ \;
+        echo "=== COPIED FILES ==="
         ls -la output_apk/
 
     - name: Upload Build Artifacts
