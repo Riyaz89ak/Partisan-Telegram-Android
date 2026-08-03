@@ -23,13 +23,13 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Build Debug APK (Excluding Tests)
-      run: ./gradlew :TMessagesProj:assembleAfatDebug -x test -x :TMessagesProj_AppTests:assembleDebug --stacktrace
+    - name: Build APK with Gradle
+      run: ./gradlew :TMessagesProj:assembleRelease -x test --continue --stacktrace
 
-    - name: Find and Copy APK
+    - name: Find and Copy All APKs
       run: |
         mkdir -p output_apk
-        find . -name "*.apk" -exec cp {} output_apk/ \;
+        find . -type f -name "*.apk" -exec cp {} output_apk/ \;
         ls -la output_apk/
 
     - name: Upload APK Artifact
