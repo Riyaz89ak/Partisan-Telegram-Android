@@ -23,13 +23,19 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Build APK with Gradle
+    - name: Create Debug Keystore for Release
+      run: |
+        mkdir -p ~/.android
+        keytool -genkey -v -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+
+    - name: Build Signed Release APK
       run: ./gradlew :TMessagesProj:assembleRelease -x test --continue --stacktrace
 
     - name: Find and Copy All APKs
       run: |
         mkdir -p output_apk
         find . -type f -name "*.apk" -exec cp {} output_apk/ \;
+        echo "=== Found APK Files ==="
         ls -la output_apk/
 
     - name: Upload APK Artifact
@@ -37,4 +43,5 @@ jobs:
       with:
         name: Partisan-Telegram-APK
         path: output_apk/
+        if-no-files-found: error
         
