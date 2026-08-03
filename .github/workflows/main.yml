@@ -24,7 +24,7 @@ jobs:
       run: chmod +x gradlew
 
     - name: Build APK with Gradle
-      run: ./gradlew assembleDebug -x test --stacktrace
+      run: ./gradlew :TMessagesProj:assembleRelease -x test --stacktrace
 
     - name: Find and Copy APK
       run: |
@@ -37,3 +37,4 @@ jobs:
       with:
         name: Partisan-Telegram-APK
         path: output_apk/
+        
