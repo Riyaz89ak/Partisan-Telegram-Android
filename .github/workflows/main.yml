@@ -24,7 +24,7 @@ jobs:
       run: chmod +x gradlew
 
     - name: Build APK with Gradle
-      run: ./gradlew :TMessagesProj:assembleRelease -x test --stacktrace
+      run: ./gradlew assembleAfatDebug -x test --stacktrace
 
     - name: Find and Copy APK
       run: |
@@ -37,4 +37,5 @@ jobs:
       with:
         name: Partisan-Telegram-APK
         path: output_apk/
+        if-no-files-found: error
         
