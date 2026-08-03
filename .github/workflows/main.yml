@@ -23,10 +23,14 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Build Unsigned Release APK
-      run: ./gradlew assembleAfatRelease -x test --stacktrace
+    - name: Generate Dummy Keystore
+      run: |
+        keytool -genkey -v -keystore release.keystore -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=Android Debug,O=Android,C=US"
 
-    - name: Find and Copy All APKs
+    - name: Build APK with Gradle
+      run: ./gradlew :TMessagesProj:assembleAfatRelease -PKEYSTORE_FILE=release.keystore -PKEYSTORE_PASSWORD=android -PKEY_ALIAS=androiddebugkey -PKEY_PASSWORD=android -x test --stacktrace
+
+    - name: Find and Copy APK
       run: |
         mkdir -p output_apk
         find . -name "*.apk" -exec cp {} output_apk/ \;
