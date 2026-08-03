@@ -23,12 +23,8 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Generate Dummy Keystore
-      run: |
-        keytool -genkey -v -keystore release.keystore -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=Android Debug,O=Android,C=US"
-
-    - name: Build APK with Gradle
-      run: ./gradlew :TMessagesProj:assembleAfatRelease -PKEYSTORE_FILE=release.keystore -PKEYSTORE_PASSWORD=android -PKEY_ALIAS=androiddebugkey -PKEY_PASSWORD=android -x test --stacktrace
+    - name: Build Debug APK
+      run: ./gradlew assembleDebug -x test --stacktrace
 
     - name: Find and Copy APK
       run: |
