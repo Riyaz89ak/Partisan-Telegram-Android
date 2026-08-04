@@ -1,4 +1,4 @@
-name: Build Partisan Telegram APK
+name: Convert AAB to APK Directly
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  convert_aab:
     runs-on: ubuntu-latest
 
     steps:
@@ -20,27 +20,35 @@ jobs:
         distribution: 'temurin'
         cache: gradle
 
+    - name: Download Bundletool
+      run: |
+        wget https://github.com/google/bundletool/releases/download/1.15.6/bundletool-all-1.15.6.jar -O bundletool.jar
+
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Create Debug Keystore for Release
+    - name: Build AAB File
+      run: ./gradlew :TMessagesProj:bundleRelease -x test --continue
+
+    - name: Convert AAB to APKS and Extract APK
       run: |
-        mkdir -p ~/.android
-        keytool -genkey -v -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+        mkdir -p final_apk
+        # Find the generated .aab file
+        AAB_FILE=$(find TMessagesProj/build/ -type f -name "*.aab" | head -n 1)
+        echo "Found AAB at: $AAB_FILE"
+        
+        # Convert AAB to APKS using bundletool
+        java -jar bundletool.jar build-apks --bundle="$AAB_FILE" --output=app.apks --mode=universal
+        
+        # Unzip APKS to get the universal.apk
+        unzip app.apks -d extracted_apks
+        
+        # Copy the single installable APK
+        cp extracted_apks/universal.apk final_apk/Partisan_Telegram.apk
+        ls -la final_apk/
 
-    - name: Build Release APK
-      run: ./gradlew :TMessagesProj:assembleRelease -x test --continue --stacktrace
-
-    - name: Find and Copy APKs
-      run: |
-        mkdir -p final_apk_only
-        find TMessagesProj/build/ -type f -name "*.apk" -exec cp {} final_apk_only/ \;
-        find TMessagesProj/build/ -type f -name "*.aab" -exec cp {} final_apk_only/ \;
-        echo "=== COPIED FILES ==="
-        ls -la final_apk_only/
-
-    - name: Upload Build Artifacts
+    - name: Upload Final APK
       uses: actions/upload-artifact@v4
       with:
-        name: Partisan-Telegram-APK
-        path: final_apk_only/
+        name: Partisan-Telegram-Direct-APK
+        path: final_apk/Partisan_Telegram.apk
