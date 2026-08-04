@@ -23,20 +23,14 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Create Keystore for Release
-      run: |
-        mkdir -p ~/.android
-        keytool -genkey -v -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
-
-    - name: Build Full Telegram Release APK
-      run: ./gradlew assembleAfatRelease -x test --continue --stacktrace || ./gradlew assembleRelease -x test --continue --stacktrace
+    - name: Build Full Telegram Debug APK
+      run: ./gradlew assembleAfatDebug -x test --continue --stacktrace || ./gradlew assembleDebug -x test --continue --stacktrace
 
     - name: Copy Only APK Files
       run: |
         mkdir -p final_apk_output
         find . -type f -name "*.apk" -exec cp {} final_apk_output/ \;
-        find . -type f -name "*.aab" -exec cp {} final_apk_output/ \;
-        echo "=== GENERATED APK/AAB FILES ==="
+        echo "=== GENERATED APK FILES ==="
         ls -la final_apk_output/
 
     - name: Upload Final Build
