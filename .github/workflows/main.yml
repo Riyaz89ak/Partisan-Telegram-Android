@@ -23,8 +23,8 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Build Standalone APK Only
-      run: ./gradlew :TMessagesProj:assembleAfatDebug -x test -x mockableAndroidJar -x testDebugUnitTest --continue --stacktrace || ./gradlew :TMessagesProj:assembleDebug -x test -x mockableAndroidJar -x testDebugUnitTest --continue --stacktrace
+    - name: Build Debug APK
+      run: ./gradlew assembleDebug --continue --stacktrace
 
     - name: Copy Only APK Files
       run: |
