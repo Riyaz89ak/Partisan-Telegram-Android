@@ -28,19 +28,20 @@ jobs:
         mkdir -p ~/.android
         keytool -genkey -v -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
 
-    - name: Build Partisan Release APK
-      run: ./gradlew :TMessagesProj:assembleAfatRelease -x test --continue --stacktrace || ./gradlew :TMessagesProj:assembleRelease -x test --continue --stacktrace
+    - name: Build Full Telegram Release APK
+      run: ./gradlew assembleAfatRelease -x test --continue --stacktrace || ./gradlew assembleRelease -x test --continue --stacktrace
 
-    - name: Copy All Build Outputs
+    - name: Copy Only APK Files
       run: |
-        mkdir -p final_artifacts
-        find . -type f \( -name "*.apk" -o -name "*.aab" -o -name "*.aar" \) -exec cp {} final_artifacts/ \;
-        echo "=== ALL GENERATED BUILD FILES ==="
-        ls -la final_artifacts/
+        mkdir -p final_apk_output
+        find . -type f -name "*.apk" -exec cp {} final_apk_output/ \;
+        find . -type f -name "*.aab" -exec cp {} final_apk_output/ \;
+        echo "=== GENERATED APK/AAB FILES ==="
+        ls -la final_apk_output/
 
-    - name: Upload Final Build Files
+    - name: Upload Final Build
       uses: actions/upload-artifact@v4
       with:
-        name: Partisan-Telegram-Build-Files
-        path: final_artifacts/
+        name: Partisan-Telegram-APK-File
+        path: final_apk_output/
         
