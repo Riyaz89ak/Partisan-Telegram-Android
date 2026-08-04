@@ -27,28 +27,42 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Build AAB File
-      run: ./gradlew :TMessagesProj:bundleRelease -x test --continue
+    - name: Create Keystore for Release
+      run: |
+        mkdir -p ~/.android
+        keytool -genkey -v -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
 
-    - name: Convert AAB to APKS and Extract APK
+    - name: Build Telegram Release Output
+      run: ./gradlew :TMessagesProj:assembleRelease -x test --continue --stacktrace
+
+    - name: Convert Output to Installable APK
       run: |
         mkdir -p final_apk
-        # Find the generated .aab file
+        
+        # 1. Look for existing .apk files
+        APK_FILE=$(find TMessagesProj/build/ -type f -name "*.apk" | head -n 1)
+        
+        # 2. Look for existing .aab files
         AAB_FILE=$(find TMessagesProj/build/ -type f -name "*.aab" | head -n 1)
-        echo "Found AAB at: $AAB_FILE"
         
-        # Convert AAB to APKS using bundletool
-        java -jar bundletool.jar build-apks --bundle="$AAB_FILE" --output=app.apks --mode=universal
+        if [ -n "$APK_FILE" ]; then
+          echo "Found direct APK: $APK_FILE"
+          cp "$APK_FILE" final_apk/Partisan_Telegram.apk
+        elif [ -n "$AAB_FILE" ]; then
+          echo "Found AAB file: $AAB_FILE. Converting using bundletool..."
+          java -jar bundletool.jar build-apks --bundle="$AAB_FILE" --output=app.apks --mode=universal
+          unzip app.apks -d extracted_apks
+          cp extracted_apks/universal.apk final_apk/Partisan_Telegram.apk
+        else
+          echo "No APK or AAB found. Copying all build output files..."
+          find TMessagesProj/build/outputs/ -type f -exec cp {} final_apk/ \;
+        fi
         
-        # Unzip APKS to get the universal.apk
-        unzip app.apks -d extracted_apks
-        
-        # Copy the single installable APK
-        cp extracted_apks/universal.apk final_apk/Partisan_Telegram.apk
         ls -la final_apk/
 
     - name: Upload Final APK
       uses: actions/upload-artifact@v4
       with:
         name: Partisan-Telegram-Direct-APK
-        path: final_apk/Partisan_Telegram.apk
+        path: final_apk/
+        
