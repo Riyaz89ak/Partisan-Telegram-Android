@@ -1,4 +1,4 @@
-name: Convert AAB to APK Directly
+name: Build Partisan Telegram Standalone APK
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  convert_aab:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -20,10 +20,6 @@ jobs:
         distribution: 'temurin'
         cache: gradle
 
-    - name: Download Bundletool
-      run: |
-        wget https://github.com/google/bundletool/releases/download/1.15.6/bundletool-all-1.15.6.jar -O bundletool.jar
-
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
@@ -32,37 +28,19 @@ jobs:
         mkdir -p ~/.android
         keytool -genkey -v -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
 
-    - name: Build Telegram Release Output
-      run: ./gradlew :TMessagesProj:assembleRelease -x test --continue --stacktrace
+    - name: Build Full Project Release APK
+      run: ./gradlew assembleAfatRelease -x test --continue --stacktrace || ./gradlew assembleRelease -x test --continue --stacktrace
 
-    - name: Convert Output to Installable APK
+    - name: Find and Copy Real APK
       run: |
-        mkdir -p final_apk
-        
-        # 1. Look for existing .apk files
-        APK_FILE=$(find TMessagesProj/build/ -type f -name "*.apk" | head -n 1)
-        
-        # 2. Look for existing .aab files
-        AAB_FILE=$(find TMessagesProj/build/ -type f -name "*.aab" | head -n 1)
-        
-        if [ -n "$APK_FILE" ]; then
-          echo "Found direct APK: $APK_FILE"
-          cp "$APK_FILE" final_apk/Partisan_Telegram.apk
-        elif [ -n "$AAB_FILE" ]; then
-          echo "Found AAB file: $AAB_FILE. Converting using bundletool..."
-          java -jar bundletool.jar build-apks --bundle="$AAB_FILE" --output=app.apks --mode=universal
-          unzip app.apks -d extracted_apks
-          cp extracted_apks/universal.apk final_apk/Partisan_Telegram.apk
-        else
-          echo "No APK or AAB found. Copying all build output files..."
-          find TMessagesProj/build/outputs/ -type f -exec cp {} final_apk/ \;
-        fi
-        
-        ls -la final_apk/
+        mkdir -p final_apk_only
+        find . -type f -name "*.apk" -exec cp {} final_apk_only/ \;
+        echo "=== GENERATED APK FILES ==="
+        ls -la final_apk_only/
 
     - name: Upload Final APK
       uses: actions/upload-artifact@v4
       with:
-        name: Partisan-Telegram-Direct-APK
-        path: final_apk/
+        name: Partisan-Telegram-APK
+        path: final_apk_only/
         
