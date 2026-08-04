@@ -1,4 +1,4 @@
-name: Build Partisan Telegram Standalone APK
+name: Build Partisan Telegram APK
 
 on:
   push:
@@ -23,15 +23,10 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Create Keystore for Release
-      run: |
-        mkdir -p ~/.android
-        keytool -genkey -v -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+    - name: Build Debug APK (Fast & No Signing Issue)
+      run: ./gradlew assembleAfatDebug -x test --continue --stacktrace || ./gradlew assembleDebug -x test --continue --stacktrace
 
-    - name: Build Full Project Release APK
-      run: ./gradlew assembleAfatRelease -x test --continue --stacktrace || ./gradlew assembleRelease -x test --continue --stacktrace
-
-    - name: Find and Copy Real APK
+    - name: Find and Copy APK Files
       run: |
         mkdir -p final_apk_only
         find . -type f -name "*.apk" -exec cp {} final_apk_only/ \;
@@ -43,4 +38,3 @@ jobs:
       with:
         name: Partisan-Telegram-APK
         path: final_apk_only/
-        
