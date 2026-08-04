@@ -28,18 +28,19 @@ jobs:
         mkdir -p ~/.android
         keytool -genkey -v -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
 
-    - name: Build Universal APK
-      run: ./gradlew :TMessagesProj:assembleAfatRelease -x test --continue --stacktrace
+    - name: Build Release APK
+      run: ./gradlew :TMessagesProj:assembleRelease -x test --continue --stacktrace
 
-    - name: Find and Copy APK Files
+    - name: Find and Copy APKs
       run: |
         mkdir -p final_apk_only
-        find . -type f -name "*.apk" -exec cp {} final_apk_only/ \;
+        find TMessagesProj/build/ -type f -name "*.apk" -exec cp {} final_apk_only/ \;
+        find TMessagesProj/build/ -type f -name "*.aab" -exec cp {} final_apk_only/ \;
+        echo "=== COPIED FILES ==="
         ls -la final_apk_only/
 
-    - name: Upload APK Only
+    - name: Upload Build Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: Partisan-Telegram-APK-Only
+        name: Partisan-Telegram-APK
         path: final_apk_only/
-        
