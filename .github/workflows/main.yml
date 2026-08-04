@@ -31,16 +31,14 @@ jobs:
     - name: Build Release APK
       run: ./gradlew :TMessagesProj:assembleRelease -x test --continue --stacktrace
 
-    - name: Collect All Outputs Directly
+    - name: Extract ONLY APK Files
       run: |
-        mkdir -p final_apk
-        cp -r TMessagesProj/build/outputs/* final_apk/ || true
-        find . -name "*.apk" -exec cp {} final_apk/ \; || true
-        ls -R final_apk/
+        mkdir -p final_apk_only
+        find TMessagesProj/build/outputs/ -type f -name "*.apk" -exec cp {} final_apk_only/ \;
+        ls -la final_apk_only/
 
-    - name: Upload Build Artifacts
+    - name: Upload APK Only
       uses: actions/upload-artifact@v4
       with:
-        name: Partisan-Telegram-Outputs
-        path: final_apk/
-        
+        name: Partisan-Telegram-APK-Only
+        path: final_apk_only/
