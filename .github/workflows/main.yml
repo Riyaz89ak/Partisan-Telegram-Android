@@ -24,18 +24,17 @@ jobs:
       run: chmod +x gradlew
 
     - name: Build Standalone APK Only
-      run: ./gradlew :TMessagesProj:assembleAfatDebug -x test -x testDebugUnitTest -x testAfatDebugUnitTest -x :TMessagesProj_AppTests:build --continue --stacktrace || ./gradlew :TMessagesProj:assembleDebug -x test -x testDebugUnitTest -x :TMessagesProj_AppTests:build --continue --stacktrace
+      run: ./gradlew assembleAfatDebug assembleAfatRelease -x test -x testDebugUnitTest -x testAfatDebugUnitTest -x :TMessagesProj_AppTests:build --continue --stacktrace || ./gradlew assembleDebug -x test -x testDebugUnitTest -x :TMessagesProj_AppTests:build --continue --stacktrace
 
-    - name: Copy All Build Artifacts
+    - name: Copy Only APK Files
       run: |
         mkdir -p final_apk_output
-        find . -type f \( -name "*.apk" -o -name "*.aar" -o -name "*.aab" \) -exec cp {} final_apk_output/ \;
-        echo "=== ALL BUILD OUTPUT FILES ==="
+        find . -type f -name "*.apk" -exec cp {} final_apk_output/ \;
+        echo "=== GENERATED APK FILES ==="
         ls -la final_apk_output/
 
     - name: Upload Final Build
       uses: actions/upload-artifact@v4
       with:
-        name: Partisan-Telegram-Build-Files
+        name: Partisan-Telegram-APK-File
         path: final_apk_output/
-        
